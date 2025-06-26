@@ -4,8 +4,8 @@ from random import randint, choice as rc
 
 from faker import Faker
 
-from app import app
-from models import db, Recipe, User
+from config import app, db
+from models import Recipe, User
 
 fake = Faker()
 
@@ -19,16 +19,15 @@ with app.app_context():
 
     print("Creating users...")
 
-    # make sure users have unique usernames
     users = []
-    usernames = []
+    usernames = set() # Use a set for efficient uniqueness checking
 
     for i in range(20):
         
         username = fake.first_name()
         while username in usernames:
             username = fake.first_name()
-        usernames.append(username)
+        usernames.add(username) # Add to the set
 
         user = User(
             username=username,
@@ -47,6 +46,10 @@ with app.app_context():
     for i in range(100):
         instructions = fake.paragraph(nb_sentences=8)
         
+        # Ensure instructions are at least 50 characters for validation
+        while len(instructions) < 50:
+            instructions += " " + fake.paragraph(nb_sentences=1)
+
         recipe = Recipe(
             title=fake.sentence(),
             instructions=instructions,
